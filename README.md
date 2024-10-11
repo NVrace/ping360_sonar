@@ -10,6 +10,7 @@
 ## Overview
 
 A ROS 2 package for the [BlueRobotics] [Ping360] Sonar. This code is being developped for Foxy.
+Tested in ROS2 Humble.
 
 **Keywords:** ROS 2, ping360
 
@@ -37,9 +38,24 @@ Get the latest stable release [here](https://github.com/CentraleNantesRobotics/p
 Clone with `--recursive` in order to get the necessary `ping-cpp` library:
 
 	cd ros2_workspace/src
-	git clone https://github.com/CentraleNantesRobotics/ping360_sonar.git -b ros2 --recursive
+	git clone https://github.com/JetSeaAI/ping360_sonar.git -b ros2 --recursive
 	cd ../..
 	colcon build --symlink-install --packages-select ping360_sonar
+
+
+### Permissions
+
+ Run the following command to add your user to the `dialout` group:
+
+    sudo usermod -a -G dialout $USER
+
+You may need to logout and login or reboot to take effect.
+
+### Verify Permissions:
+
+You can verify that your user has been added to the dialout group by running:
+
+    groups $USER
 
 	
 ## Nodes
@@ -48,7 +64,17 @@ The package provides both C++ and Python nodes, they share the same ROS API and 
 
  - C++ version: `ros2 run ping360_sonar ping360_node`
  - Python: `ros2 run ping360_sonar ping360.py`
- 
+
+The package can emulates a sonar for testing when node can't find sonar, this may useful when early test.
+To disable it, see fallback_emulated in [Parameters](#parameters)
+
+## Launch Files
+
+The package provides launch files for ease of use and configuration.
+
+ - C++ version: `ros2 launch ping360_sonar ping360_bringup.launch`
+ - Python: `ros2 launch ping360_sonar ping360_bringup_py.launch`
+
  While continuously rotating the sonar in a set field of view (defined by the min and max angle parameters in gradians), it may publishes three types of messages:
 - The raw response data (the echo intensities for a given angle & range)
 - A LaserScan msg with ranges detected using a certain intensity threshold:
