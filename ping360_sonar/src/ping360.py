@@ -5,6 +5,7 @@ from math import cos, pi, sin
 
 import numpy as np
 import rclpy
+import rclpy.logging
 from rclpy.node import Node
 from rclpy.executors import SingleThreadedExecutor
 from rcl_interfaces.msg import SetParametersResult, ParameterDescriptor, IntegerRange
@@ -33,8 +34,8 @@ class Ping360_node(Node):
             'speed_of_sound': [1500,1000,2000],
             'range_max': [2,1,50],
             'publish_image': True,
-            'publish_scan': False,
-            'publish_echo': False}
+            'publish_scan': True,
+            'publish_echo': True}
         
         for name, value in parameters.items():
             if type(value) not in (list, tuple):
@@ -189,21 +190,28 @@ class Ping360_node(Node):
         for _ in range(count - cur):
             self.scan.ranges.append(0.)
             self.scan.intensities.append(0.)
-        if cur > count:
-            self.scan.ranges = self.scan.ranges[:count]
-            self.scan.intensities = self.scan.intensities[:count]
+
+        ## this is not working. need debug in future    
+        # if cur > count:
+        #     self.get_logger().info(f"cutting ranges: {cur} -> {count}")
+        #     self.get_logger().info(f"chk ranges: {len(self.scan.ranges)}")
+        #     # self.scan.ranges = self.scan.ranges[:count]
+        #     self.get_logger().info(f"sec chk ranges: {len(self.scan.ranges)}")
+        #     # self.scan.intensities = self.scan.intensities[:count]
             
-        cur = self.sonar.angleIndex()
+        # cur = self.sonar.angleIndex()
         for i in range(len(self.sonar.data)):
             if self.sonar.data[i] >= self.scan_threshold:
                 dist = self.sonar.rangeFrom(i)
                 if self.scan.range_min <= dist <= self.scan.range_max:
-                    self.scan.ranges[angle] = dist
-                    self.scan.intensities[angle] = self.sonar.data[i]/255.
+                    self.get_logger().info(f"angle: {angle}, dist: {dist}")
+                    self.scan.ranges[angle-1] = dist #index starts from 0. need to check in future
+                    self.scan.intensities[angle-1] = self.sonar.data[i]/255. #index starts from 0. need to check in future
                     break
         
         if end_turn:
             if not self.sonar.fullScan():
+                self.get_logger().info("not full scan")
                 if self.sonar.angleStep() < 0:
                     # now going negative: scan was positive
                     self.scan.angle_max = self.sonar.angleMax()
@@ -212,9 +220,10 @@ class Ping360_node(Node):
                     # now going positive: scan was negative
                     self.scan.angle_max = self.sonar.angleMin()
                     self.scan.angle_min = self.sonar.angleMax()
+
                 self.scan.angle_increment = -self.sonar.angleStep()
                 self.scan.angle_max -= self.scan.angle_increment
-                
+            self.get_logger().info("full scan")
             self.scan.header.stamp = self.now()
             self.scan_pub.publish(self.scan)
     
