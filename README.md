@@ -72,8 +72,8 @@ To disable it, see fallback_emulated in [Parameters](#parameters)
 
 The package provides launch files for ease of use and configuration.
 
- - C++ version: `ros2 launch ping360_sonar ping360_bringup.launch`
- - Python: `ros2 launch ping360_sonar ping360_bringup_py.launch`
+ - C++ version: `ros2 launch ping360_sonar ping360_bringup.launch.py`
+ - Python: `ros2 launch ping360_sonar ping360_bringup_py.launch.py`
 
  While continuously rotating the sonar in a set field of view (defined by the min and max angle parameters in gradians), it may publishes three types of messages:
 - The raw response data (the echo intensities for a given angle & range)
